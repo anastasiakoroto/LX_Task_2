@@ -1,20 +1,40 @@
+from itertools import zip_longest
+
+
 class Version:
     def __init__(self, version):
         self.value = version
         self.version_list = version.split('.')
 
-    def divide(self, string):
+    def divide_to_letters_and_digit(self, string):
         symb_list = []
+        new_substring = ''
+        prev_ind = 0
         for ind, symbol in enumerate(string):
-            if not symbol.isdigit():
-                symb_list.append(string[:ind])
-                symb_list.append(string[ind:].strip('-'))
+            if symbol in '0123456789':
+                if ind - prev_ind > 1:
+                    symb_list.append(new_substring)
+                    symb_list.append(string[prev_ind + 1:ind].strip('-'))
+                    new_substring = symbol
+                    if ind == len(string) - 1:
+                        symb_list.append(new_substring)
+                        break
+                else:
+                    new_substring += symbol
+                    prev_ind = ind  #
+            elif ind == len(string) - 1:
+                symb_list.append(new_substring)
+                if ind - prev_ind > 1:
+                    symb_list.append(string[prev_ind + 1:ind])  #
+                else:
+                    symb_list.append(symbol)  #
                 break
-        # print('S list: ', symb_list)
+        # else:
+        #     symb_list = string
         return symb_list
 
     def compare_lists(self, list_a, list_b):
-        for a_elem, b_elem in zip(list_a, list_b):
+        for a_elem, b_elem in zip_longest(list_a, list_b, fillvalue=''):
             if a_elem.isdigit() and b_elem.isdigit():
                 if a_elem < b_elem:
                     return 1
@@ -23,40 +43,36 @@ class Version:
                 else:
                     continue
             elif a_elem.isdigit() and not b_elem.isdigit():
-                b_elem = self.divide(b_elem)
-                if a_elem < b_elem[0]:
-                    return 1
-                elif a_elem > b_elem[0]:
-                    return 0
-                else:
-                    return 0
+                b_elem = self.divide_to_letters_and_digit(b_elem)
+                return 1 if a_elem < b_elem[0] else 0
             elif not a_elem.isdigit() and b_elem.isdigit():
-                a_elem = self.divide(a_elem)
-                if a_elem[0] < b_elem:
-                    return 1
-                elif a_elem[0] > b_elem:
-                    return 0
-                else:
-                    return 1
+                a_elem = self.divide_to_letters_and_digit(a_elem)
+                return 0 if a_elem[0] > b_elem else 1
             else:
-                a_elem = self.divide(a_elem)
-                b_elem = self.divide(b_elem)
-                return self.compare_lists(a_elem, b_elem)
+                if a_elem == '':
+                    return 0
+                elif b_elem == '':
+                    return 1
+                elif a_elem.isalpha() and b_elem.isalpha():
+                    if a_elem < b_elem:
+                        return 1
+                    elif a_elem > b_elem:
+                        return 0
+                    else:
+                        continue
+                else:
+                    a_elem = self.divide_to_letters_and_digit(a_elem)
+                    b_elem = self.divide_to_letters_and_digit(b_elem)
+                    return self.compare_lists(a_elem, b_elem)
         else:
             return -1
 
     def __lt__(self, other):
-        a = self.version_list
-        b = other.version_list
-        print(a, b, sep='\n')
-        result = self.compare_lists(a, b)
-
+        result = self.compare_lists(self.version_list, other.version_list)
         return True if result == 1 else False
 
     def __eq__(self, other):
-        a = self.version_list
-        b = other.version_list
-        result = self.compare_lists(a, b)
+        result = self.compare_lists(self.version_list, other.version_list)
         return True if result == -1 else False
 
 
