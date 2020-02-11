@@ -4,14 +4,14 @@ from itertools import zip_longest
 class Comparator:
 
     def divide_to_letters_and_digit(self, string):
-        symb_list = []
+        letters_and_numbers_list = []
         new_substring = ''
         prev_ind = 0
         for ind, symbol in enumerate(string):
-            if symbol in '0123456789':
+            if symbol.isdigit():
                 if ind - prev_ind > 1 and new_substring != '':
-                    symb_list.append(new_substring)
-                    symb_list.append(string[prev_ind + 1:ind].strip('-'))
+                    letters_and_numbers_list.append(new_substring)
+                    letters_and_numbers_list.append(string[prev_ind + 1:ind].strip('-'))
                     new_substring = symbol
                 elif ind - prev_ind > 1 and new_substring == '':
                     new_substring = string[:ind].strip('-')
@@ -20,12 +20,12 @@ class Comparator:
                     new_substring += symbol
                     prev_ind = ind
             if ind == len(string) - 1:
-                symb_list.append(new_substring)
+                letters_and_numbers_list.append(new_substring)
                 if ind - prev_ind > 1:
-                    symb_list.append(string[prev_ind + 1:ind])
+                    letters_and_numbers_list.append(string[prev_ind + 1:ind])
                 else:
-                    symb_list.append(symbol)
-        return symb_list
+                    letters_and_numbers_list.append(symbol)
+        return letters_and_numbers_list
 
     def compare_lists(self, list_a, list_b):
         for a_elem, b_elem in zip_longest(list_a, list_b, fillvalue=''):
@@ -42,18 +42,18 @@ class Comparator:
             elif not a_elem.isdigit() and b_elem.isdigit():
                 a_elem = self.divide_to_letters_and_digit(a_elem)
                 return 0 if a_elem[0] > b_elem else 1
+            elif a_elem.isalpha() and b_elem.isalpha():
+                if a_elem < b_elem:
+                    return 1
+                elif a_elem > b_elem:
+                    return 0
+                else:
+                    continue
             else:
                 if a_elem == '':
                     return 0
                 elif b_elem == '':
                     return 1
-                elif a_elem.isalpha() and b_elem.isalpha():
-                    if a_elem < b_elem:
-                        return 1
-                    elif a_elem > b_elem:
-                        return 0
-                    else:
-                        continue
                 else:
                     a_elem = self.divide_to_letters_and_digit(a_elem)
                     b_elem = self.divide_to_letters_and_digit(b_elem)
