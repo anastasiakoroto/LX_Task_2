@@ -1,10 +1,7 @@
 from itertools import zip_longest
 
 
-class Version:
-    def __init__(self, version):
-        self.value = version
-        self.version_list = version.split('.')
+class Comparator:
 
     def divide_to_letters_and_digit(self, string):
         symb_list = []
@@ -12,25 +9,22 @@ class Version:
         prev_ind = 0
         for ind, symbol in enumerate(string):
             if symbol in '0123456789':
-                if ind - prev_ind > 1:
+                if ind - prev_ind > 1 and new_substring != '':
                     symb_list.append(new_substring)
                     symb_list.append(string[prev_ind + 1:ind].strip('-'))
                     new_substring = symbol
-                    if ind == len(string) - 1:
-                        symb_list.append(new_substring)
-                        break
+                elif ind - prev_ind > 1 and new_substring == '':
+                    new_substring = string[:ind].strip('-')
+                    prev_ind = ind
                 else:
                     new_substring += symbol
-                    prev_ind = ind  #
-            elif ind == len(string) - 1:
+                    prev_ind = ind
+            if ind == len(string) - 1:
                 symb_list.append(new_substring)
                 if ind - prev_ind > 1:
-                    symb_list.append(string[prev_ind + 1:ind])  #
+                    symb_list.append(string[prev_ind + 1:ind])
                 else:
-                    symb_list.append(symbol)  #
-                break
-        # else:
-        #     symb_list = string
+                    symb_list.append(symbol)
         return symb_list
 
     def compare_lists(self, list_a, list_b):
@@ -67,12 +61,19 @@ class Version:
         else:
             return -1
 
+
+class Version:
+    def __init__(self, version):
+        self.value = version
+        self.version_list = version.split('.')
+        self.cmp = Comparator()
+
     def __lt__(self, other):
-        result = self.compare_lists(self.version_list, other.version_list)
+        result = self.cmp.compare_lists(self.version_list, other.version_list)
         return True if result == 1 else False
 
     def __eq__(self, other):
-        result = self.compare_lists(self.version_list, other.version_list)
+        result = self.cmp.compare_lists(self.version_list, other.version_list)
         return True if result == -1 else False
 
 
