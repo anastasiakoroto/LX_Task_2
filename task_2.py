@@ -22,44 +22,49 @@ class Comparator:
             if ind == len(string) - 1:
                 letters_and_numbers_list.append(new_substring)
                 if ind - prev_ind > 1:
-                    letters_and_numbers_list.append(string[prev_ind + 1:ind])
+                    letters_and_numbers_list.append(string[prev_ind + 1:].strip('-'))
                 else:
                     letters_and_numbers_list.append(symbol)
         return letters_and_numbers_list
 
     def compare_lists(self, list_a, list_b):
+        less, equal = False, False  # less - list_a < list_b, equal - list_a == list_b
         for a_elem, b_elem in zip_longest(list_a, list_b, fillvalue=''):
             if a_elem.isdigit() and b_elem.isdigit():
                 if a_elem < b_elem:
-                    return 1
+                    less = True
+                    return less, equal
                 elif a_elem > b_elem:
-                    return 0
+                    return less, equal
                 else:
                     continue
             elif a_elem.isdigit() and not b_elem.isdigit():
                 b_elem = self.divide_to_letters_and_digit(b_elem)
-                return 1 if a_elem < b_elem[0] else 0
+                return (True, equal) if a_elem < b_elem[0] else (less, equal)
             elif not a_elem.isdigit() and b_elem.isdigit():
                 a_elem = self.divide_to_letters_and_digit(a_elem)
-                return 0 if a_elem[0] > b_elem else 1
+                return (less, equal) if a_elem[0] > b_elem else (True, equal)
             elif a_elem.isalpha() and b_elem.isalpha():
                 if a_elem < b_elem:
-                    return 1
+                    less = True
+                    return less, equal
                 elif a_elem > b_elem:
-                    return 0
+                    return less, equal
                 else:
                     continue
             else:
                 if a_elem == '':
-                    return 0
+                    return less, equal
                 elif b_elem == '':
-                    return 1
+                    less = True
+                    return less, equal
                 else:
                     a_elem = self.divide_to_letters_and_digit(a_elem)
                     b_elem = self.divide_to_letters_and_digit(b_elem)
                     return self.compare_lists(a_elem, b_elem)
         else:
-            return -1
+            equal = True
+            return less, equal
 
 
 class Version:
@@ -69,12 +74,12 @@ class Version:
         self.cmp = Comparator()
 
     def __lt__(self, other):
-        result = self.cmp.compare_lists(self.version_list, other.version_list)
-        return True if result == 1 else False
+        is_less, _ = self.cmp.compare_lists(self.version_list, other.version_list)
+        return is_less
 
     def __eq__(self, other):
-        result = self.cmp.compare_lists(self.version_list, other.version_list)
-        return True if result == -1 else False
+        _, is_equal = self.cmp.compare_lists(self.version_list, other.version_list)
+        return is_equal
 
 
 def main():
